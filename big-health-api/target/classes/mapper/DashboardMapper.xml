@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.kmbeast.mapper.DashboardMapper">
+    <select id="staticCount" resultType="cn.kmbeast.pojo.vo.DashboardVO">
+        select (select COUNT(*) from user) AS userCount,
+               (select COUNT(*) from health_model) AS modelCount,
+               (select COUNT(*) from health_news) AS healthNewsCount,
+               (select COUNT(*) from recipe) AS recipeCount
+    </select>
+    <select id="typeCountHeathNews" resultType="cn.kmbeast.pojo.vo.ChartVO">
+        select COUNT(*) AS count,type_id AS name from health_news hn group by hn.type_id
+    </select>
+    <select id="typeCountRecipe" resultType="cn.kmbeast.pojo.vo.ChartVO">
+        select COUNT(*) AS count,type_id AS name from recipe r group by r.type_id
+    </select>
+
+
+</mapper>

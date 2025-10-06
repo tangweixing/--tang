@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.kmbeast.mapper.HealthModelMapper">
+    <select id="queryList" resultMap="BaseResultMap">
+        SELECT hm.*
+        FROM health_model hm
+        left join user u on hm.user_id = u.id
+        <where>
+            1 = 1
+            <if test="name != null and name != ''">
+                AND hm.name like concat('%',#{name},'%')
+            </if>
+            <if test="userName != null and userName != ''">
+                AND u.user_name like concat('%',#{userName},'%')
+            </if>
+            <if test="isGlobal != null">
+                AND hm.is_global = #{isGlobal}
+            </if>
+            <if test="userId != null">
+                AND hm.user_id = #{userId}
+            </if>
+            <if test="startTime != null and endTime != null">
+                AND hm.create_time BETWEEN #{startTime} AND #{endTime}
+            </if>
+        </where>
+            ORDER BY hm.id DESC
+            <if test="current != null and size != null">
+                LIMIT #{current},#{size}
+            </if>
+
+    </select>
+    <select id="queryListCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM health_model hm
+        left join user u on hm.user_id = u.id
+        <where>
+            1 = 1
+            <if test="name != null and name != ''">
+                AND hm.name like concat('%',#{name},'%')
+            </if>
+            <if test="userName != null and userName != ''">
+                AND u.user_name like concat('%',#{userName},'%')
+            </if>
+            <if test="isGlobal != null">
+                AND hm.is_global = #{isGlobal}
+            </if>
+            <if test="startTime != null and endTime != null">
+                AND hm.create_time BETWEEN #{startTime} AND #{endTime}
+            </if>
+        </where>
+    </select>
+    <select id="queryByDay" resultMap="ChartVOResultMap">
+        SELECT
+        COUNT(*) AS count,
+        DATE_FORMAT(hm.create_time, '%Y-%m-%d') AS name  -- 提取日期并格式化为 '年-月-日' 作为name
+        FROM health_model hm
+        <where>
+        <if test="startTime != null and endTime != null">
+            AND hm.create_time BETWEEN #{startTime} AND #{endTime}
+        </if>
+        </where>
+        GROUP BY DATE_FORMAT(hm.create_time, '%Y-%m-%d')  -- 按日期分组
+        ORDER BY name  -- 按日期排序，确保结果按时间顺序展示
+    </select>
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.kmbeast.pojo.entity.HealthModel">
+        <id column="id" property="id"/>
+        <result column="icon_url" property="iconUrl"/>
+        <result column="is_global" property="isGlobal"/>
+        <result column="user_id" property="userId"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+    <resultMap id="ChartVOResultMap" type="cn.kmbeast.pojo.vo.ChartVO">
+        <result column="name" property="name" jdbcType="VARCHAR"/>  <!-- 明确字段类型为VARCHAR -->
+        <result column="count" property="count" jdbcType="INTEGER"/>
+    </resultMap>
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.kmbeast.mapper.HealthNewsMapper">
+
+    <!-- 查询资讯列表并统计浏览量 -->
+    <select id="selectHealthNewsListWithViewCount" resultType="cn.kmbeast.pojo.vo.HealthNewsListVO">
+        SELECT
+        h.id,
+        h.title,
+        h.cover,
+        (SELECT COUNT(*) FROM flow_index WHERE content_module = 'HEALTH_NEWS' AND content_id = h.id AND type=1) AS viewCount
+        FROM health_news h
+        <where> 1=1
+        <if test="typeId != null">
+            AND h.type_id = #{typeId}
+        </if>
+        <if test="title != null and title != ''">
+            AND h.title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        <if test="startTime != null and endTime != null">
+            AND h.create_time BETWEEN #{startTime} AND #{endTime}
+        </if>
+        </where>
+        ORDER BY h.id
+        <if test="current != null and size != null">
+            LIMIT #{current},#{size}
+        </if>
+    </select>
+    <select id="selectHealthNewsListWithViewCountCount" resultType="java.lang.Integer"
+            parameterType="cn.kmbeast.pojo.dto.query.extend.HealthNewsQueryDto">
+        select COUNT(*)
+        FROM health_news h
+        <where> 1=1
+            <if test="typeId != null">
+                AND h.type_id = #{typeId}
+            </if>
+            <if test="title != null and title != ''">
+                AND h.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="startTime != null and endTime != null">
+                AND h.create_time BETWEEN #{startTime} AND #{endTime}
+            </if>
+        </where>
+    </select>
+    <select id="selectHealthNewsListWithViewCountByIds" resultType="cn.kmbeast.pojo.vo.HealthNewsListVO"
+            parameterType="java.util.List">
+        SELECT
+        h.id,
+        h.title,
+        h.cover,
+        (SELECT COUNT(*) FROM flow_index WHERE content_module = 'HEALTH_NEWS' AND content_id = h.id AND type=1) AS viewCount
+        FROM health_news h
+        <where>
+            <!-- 当ids不为空时，添加IN条件 -->
+            <if test="list != null and list.size() > 0">
+                h.id IN
+                <foreach collection="list" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>
